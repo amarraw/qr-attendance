@@ -6,56 +6,168 @@
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-md-10">
             <div class="card">
                 <div class="card-header bg-primary text-white">
                     <h3 class="mb-0"><i class="bi bi-person-plus"></i> Student Registration</h3>
                 </div>
                 <div class="card-body">
-                    <form method="post">
+                    <form method="post" class="needs-validation" novalidate>
                         {% csrf_token %}
-                        <div class="row">
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="row mb-3">
                             <div class="col-md-6">
-                                {{ form.username|as_crispy_field }}
+                                <div class="form-group">
+                                    <label for="{{ form.username.id_for_label }}">Username *</label>
+                                    {{ form.username }}
+                                    {% if form.username.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.username.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                {{ form.student_id|as_crispy_field }}
+                                <div class="form-group">
+                                    <label for="{{ form.student_id.id_for_label }}">Student ID *</label>
+                                    {{ form.student_id }}
+                                    {% if form.student_id.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.student_id.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="row">
+                        <div class="row mb-3">
                             <div class="col-md-6">
-                                {{ form.first_name|as_crispy_field }}
+                                <div class="form-group">
+                                    <label for="{{ form.first_name.id_for_label }}">First Name *</label>
+                                    {{ form.first_name }}
+                                    {% if form.first_name.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.first_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                {{ form.last_name|as_crispy_field }}
+                                <div class="form-group">
+                                    <label for="{{ form.last_name.id_for_label }}">Last Name *</label>
+                                    {{ form.last_name }}
+                                    {% if form.last_name.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.last_name.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="row">
+                        <div class="row mb-3">
                             <div class="col-md-6">
-                                {{ form.email|as_crispy_field }}
+                                <div class="form-group">
+                                    <label for="{{ form.email.id_for_label }}">Email *</label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.email.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                {{ form.phone|as_crispy_field }}
+                                <div class="form-group">
+                                    <label for="{{ form.phone.id_for_label }}">Phone Number</label>
+                                    {{ form.phone }}
+                                    {% if form.phone.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.phone.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="row">
+                        <div class="row mb-3">
                             <div class="col-md-6">
-                                {{ form.department|as_crispy_field }}
+                                <div class="form-group">
+                                    <label for="{{ form.department.id_for_label }}">Department *</label>
+                                    {{ form.department }}
+                                    {% if form.department.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.department.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                {{ form.year|as_crispy_field }}
+                                <div class="form-group">
+                                    <label for="{{ form.year.id_for_label }}">Year *</label>
+                                    {{ form.year }}
+                                    {% if form.year.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.year.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="row">
+                        <div class="row mb-3">
                             <div class="col-md-6">
-                                {{ form.password1|as_crispy_field }}
+                                <div class="form-group">
+                                    <label for="{{ form.password1.id_for_label }}">Password *</label>
+                                    {{ form.password1 }}
+                                    {% if form.password1.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.password1.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        {{ form.password1.help_text }}
+                                    </small>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                {{ form.password2|as_crispy_field }}
+                                <div class="form-group">
+                                    <label for="{{ form.password2.id_for_label }}">Confirm Password *</label>
+                                    {{ form.password2 }}
+                                    {% if form.password2.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.password2.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                         
@@ -75,4 +187,23 @@
         </div>
     </div>
 </div>
+
+<style>
+    .form-control {
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ced4da;
+    }
+    .form-control:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+</style>
 {% endblock %}
