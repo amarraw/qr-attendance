@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load qr_code %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .qr-container {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+    }
+    #qr-timer {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #dc3545;
+    }
+    .qr-valid {
+        color: #28a745;
+    }
+    .qr-expired {
+        color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-person-circle"></i> Student Profile</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Name:</strong> {{ student.user.get_full_name }}</p>
+                <p><strong>Student ID:</strong> {{ student.student_id }}</p>
+                <p><strong>Department:</strong> {{ student.department }}</p>
+                <p><strong>Year:</strong> {{ student.year }}</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-clock"></i> QR Code Validity</h5>
+            </div>
+            <div class="card-body text-center">
+                <div id="qr-timer">30s</div>
+                <div class="mt-3">
+                    <button id="refresh-qr" class="btn btn-primary">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh QR Code
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-qr-code"></i> Your QR Code</h5>
+            </div>
+            <div class="card-body">
+                <div class="qr-container" id="qr-container">
+                    <div id="qr-code">
+                        {% qr_from_text qr_code.code size="M" image_format="png" %}
+                    </div>
+                    <p class="mt-3">Show this QR code to your instructor</p>
+                    <p><small>QR Data: {{ qr_code.code }}</small></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0"><i class="bi bi-calendar-event"></i> Active Sessions</h5>
+            </div>
+            <div class="card-body">
+                {% if active_sessions %}
+                    <div class="row">
+                        {% for session in active_sessions %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card session-card h-100">
+                                    <div class="card-body">
+                                        <h6>{{ session.course_code }}</h6>
+                                        <p class="mb-1">{{ session.name }}</p>
+                                        <p class="mb-1"><small>Type: {{ session.get_session_type_display }}</small></p>
+                                        <p class="mb-1"><small>Location: {{ session.location|default:"N/A" }}</small></p>
+                                        <p class="mb-0">
+                                            <small>
+                                                {{ session.start_time|date:"g:i A" }} - {{ session.end_time|date:"g:i A" }}
+                                            </small>
+                                        </p>
+                                        {% if session.is_live %}
+                                            <span class="badge bg-success mt-2">Live Now</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">No active sessions at the moment.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let timeRemaining = 30;
+    let timerInterval;
+    
+    function updateTimer() {
+        timeRemaining--;
+        $('#qr-timer').text(timeRemaining + 's');
+        
+        if (timeRemaining <= 10) {
+            $('#qr-timer').addClass('qr-expired').removeClass('qr-valid');
+        }
+        
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            $('#qr-timer').text('Expired!');
+            refreshQRCode();
+        }
+    }
+    
+    function refreshQRCode() {
+        $.ajax({
+            url: "{% url 'get_qr_code' %}",
+            type: 'GET',
+            success: function(response) {
+                // Update QR code image
+                $('#qr-code').html(
+                    '<img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + 
+                    encodeURIComponent(response.qr_data) + '" alt="QR Code" class="img-fluid">'
+                );
+                
+                // Update displayed data
+                $('small').last().text('QR Data: ' + response.qr_data);
+                
+                // Reset timer
+                timeRemaining = Math.floor(response.time_remaining);
+                $('#qr-timer').text(timeRemaining + 's');
+                $('#qr-timer').addClass('qr-valid').removeClass('qr-expired');
+                
+                if (timeRemaining > 10) {
+                    clearInterval(timerInterval);
+                    timerInterval = setInterval(updateTimer, 1000);
+                }
+            },
+            error: function() {
+                alert('Error refreshing QR code. Please try again.');
+            }
+        });
+    }
+    
+    $(document).ready(function() {
+        // Start timer
+        timerInterval = setInterval(updateTimer, 1000);
+        
+        // Refresh QR code button
+        $('#refresh-qr').click(refreshQRCode);
+        
+        // Auto-refresh QR code every 25 seconds
+        setInterval(refreshQRCode, 25000);
+    });
+</script>
+{% endblock %}

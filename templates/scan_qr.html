@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Scan QR Code - {{ session.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    #scanner-container {
+        width: 100%;
+        max-width: 500px;
+        margin: 0 auto;
+        position: relative;
+    }
+    #video {
+        width: 100%;
+        border-radius: 10px;
+        border: 3px solid #007bff;
+    }
+    #scan-region {
+        position: absolute;
+        top: 20%;
+        left: 20%;
+        width: 60%;
+        height: 60%;
+        border: 2px dashed #28a745;
+        pointer-events: none;
+    }
+    #result {
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+    .attendance-list {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-camera"></i> QR Code Scanner - {{ session.name }}</h4>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="mb-3">
+                        <span class="badge bg-success fs-6">Session Active</span>
+                        <span class="badge bg-info fs-6 ms-2">{{ attendance_count }} Students Marked</span>
+                    </div>
+                    <p>Time: {{ session.start_time|date:"g:i A" }} - {{ session.end_time|date:"g:i A" }}</p>
+                </div>
+                
+                <div id="scanner-container" class="mb-4">
+                    <video id="video" autoplay playsinline></video>
+                    <div id="scan-region"></div>
+                </div>
+                
+                <div class="text-center">
+                    <button id="start-scanner" class="btn btn-success btn-lg">
+                        <i class="bi bi-play-circle"></i> Start Scanner
+                    </button>
+                    <button id="stop-scanner" class="btn btn-danger btn-lg ms-2" disabled>
+                        <i class="bi bi-stop-circle"></i> Stop Scanner
+                    </button>
+                </div>
+                
+                <div class="mt-4 text-center">
+                    <div id="result" class="alert alert-info" style="display: none;"></div>
+                </div>
+                
+                <div class="mt-4">
+                    <h5>Manual Entry</h5>
+                    <form method="post" id="manual-form">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="manual-qr" placeholder="Enter QR code data manually">
+                            <button class="btn btn-primary" type="button" id="submit-manual">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-list-check"></i> Recent Attendance</h5>
+            </div>
+            <div class="card-body attendance-list">
+                <div id="recent-attendance">
+                    <p class="text-muted">Attendance records will appear here...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script>
+    let videoStream;
+    let isScanning = false;
+    let scannerInterval;
+    
+    async function startScanner() {
+        try {
+            videoStream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' }
+            });
+            
+            const video = document.getElementById('video');
+            video.srcObject = videoStream;
+            
+            isScanning = true;
+            $('#start-scanner').prop('disabled', true);
+            $('#stop-scanner').prop('disabled', false);
+            
+            scannerInterval = setInterval(scanQRCode, 500);
+            
+        } catch (err) {
+            console.error('Error accessing camera:', err);
+            alert('Cannot access camera. Please check permissions.');
+        }
+    }
+    
+    function stopScanner() {
+        if (videoStream) {
+            videoStream.getTracks().forEach(track => track.stop());
+        }
+        
+        isScanning = false;
+        clearInterval(scannerInterval);
+        
+        $('#start-scanner').prop('disabled', false);
+        $('#stop-scanner').prop('disabled', true);
+    }
+    
+    function scanQRCode() {
+        if (!isScanning) return;
+        
+        const video = document.getElementById('video');
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+        
+        if (code) {
+            processQRCode(code.data);
+        }
+    }
+    
+    function processQRCode(qrData) {
+        if (!qrData.startsWith('ATT:')) {
+            showResult('Invalid QR code format!', 'danger');
+            return;
+        }
+        
+        // Stop scanning temporarily
+        stopScanner();
+        
+        // Send to server
+        $.ajax({
+            url: "{% url 'api_scan_qr' session.id %}",
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ qr_data: qrData }),
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    showResult(response.message, 'success');
+                    addToAttendanceList(response.student);
+                    
+                    // Resume scanning after 2 seconds
+                    setTimeout(() => {
+                        if (!isScanning) {
+                            startScanner();
+                        }
+                    }, 2000);
+                    
+                } else {
+                    showResult(response.message, 'warning');
+                    
+                    // Resume scanning after 1 second
+                    setTimeout(() => {
+                        if (!isScanning) {
+                            startScanner();
+                        }
+                    }, 1000);
+                }
+            },
+            error: function() {
+                showResult('Error processing QR code', 'danger');
+                
+                // Resume scanning after 1 second
+                setTimeout(() => {
+                    if (!isScanning) {
+                        startScanner();
+                    }
+                }, 1000);
+            }
+        });
+    }
+    
+    function showResult(message, type) {
+        const result = $('#result');
+        result.removeClass('alert-info alert-success alert-warning alert-danger')
+               .addClass('alert-' + type)
+               .text(message)
+               .fadeIn();
+        
+        setTimeout(() => {
+            result.fadeOut();
+        }, 3000);
+    }
+    
+    function addToAttendanceList(student) {
+        const now = new Date().toLocaleTimeString();
+        const html = `
+            <div class="alert alert-success p-2 mb-2">
+                <strong>${student.name}</strong><br>
+                <small>ID: ${student.id} | Dept: ${student.department}</small><br>
+                <small class="text-muted">${now}</small>
+            </div>
+        `;
+        
+        $('#recent-attendance').prepend(html);
+    }
+    
+    $(document).ready(function() {
+        // Scanner controls
+        $('#start-scanner').click(startScanner);
+        $('#stop-scanner').click(stopScanner);
+        
+        // Manual entry
+        $('#submit-manual').click(function() {
+            const qrData = $('#manual-qr').val().trim();
+            if (qrData) {
+                processQRCode(qrData);
+                $('#manual-qr').val('');
+            }
+        });
+        
+        $('#manual-qr').keypress(function(e) {
+            if (e.which === 13) {
+                $('#submit-manual').click();
+                return false;
+            }
+        });
+        
+        // Initialize form with session ID
+        $('#id_session_id').val({{ session.id }});
+        
+        // Auto-start scanner (optional)
+        // startScanner();
+    });
+</script>
+{% endblock %}

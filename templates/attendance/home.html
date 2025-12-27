@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome - QR Attendance System{% endblock %}
+
+{% block content %}
+<div class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-4 mb-4">Modern QR-Based Attendance System</h1>
+        <p class="lead mb-4">Streamline attendance tracking with secure QR code technology</p>
+        {% if not user.is_authenticated %}
+            <a href="{% url 'login' %}" class="btn btn-light btn-custom me-2">
+                <i class="bi bi-box-arrow-in-right"></i> Login
+            </a>
+            <a href="{% url 'register_student' %}" class="btn btn-outline-light btn-custom">
+                <i class="bi bi-person-plus"></i> Register Now
+            </a>
+        {% else %}
+            {% if user.student_profile %}
+                <a href="{% url 'student_dashboard' %}" class="btn btn-light btn-custom">
+                    <i class="bi bi-speedometer2"></i> Go to Dashboard
+                </a>
+            {% elif user.admin_profile %}
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-light btn-custom">
+                    <i class="bi bi-speedometer2"></i> Go to Dashboard
+                </a>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<div class="container">
+    <div class="row text-center mb-5">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="bi bi-qr-code feature-icon"></i>
+                    <h4>QR Code Based</h4>
+                    <p>Students generate secure, time-limited QR codes for attendance marking.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="bi bi-shield-check feature-icon"></i>
+                    <h4>Secure & Reliable</h4>
+                    <p>Prevent proxy attendance with encrypted QR codes and session validation.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="bi bi-file-earmark-excel feature-icon"></i>
+                    <h4>Export Reports</h4>
+                    <p>Export attendance data to CSV or Excel formats for analysis and record-keeping.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-person-check"></i> For Students</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i> Easy QR code generation</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i> View attendance history</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i> Real-time QR code updates</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i> Secure authentication</li>
+                    </ul>
+                    {% if not user.is_authenticated %}
+                    <div class="text-center mt-3">
+                        <a href="{% url 'register_student' %}" class="btn btn-primary">Register as Student</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-person-badge"></i> For Administrators</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i> QR code scanning interface</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i> Create attendance sessions</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i> Export attendance data</li>
+                        <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i> Manage students and sessions</li>
+                    </ul>
+                    {% if not user.is_authenticated %}
+                    <div class="text-center mt-3">
+                        <a href="{% url 'register_admin' %}" class="btn btn-success">Register as Admin</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
