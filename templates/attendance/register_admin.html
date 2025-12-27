@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Registration - QR Attendance System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0"><i class="bi bi-person-badge"></i> Administrator Registration</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if messages %}
+                            {% for message in messages %}
+                                {% if message.tags == 'error' %}
+                                    <div class="alert alert-danger alert-dismissible fade show">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="id_username" class="form-label">Username *</label>
+                                    <input type="text" name="username" id="id_username" 
+                                           class="form-control" placeholder="Choose a username" required
+                                           value="{{ request.POST.username|default:'' }}">
+                                    <div class="invalid-feedback">
+                                        Please choose a username.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="id_department" class="form-label">Department *</label>
+                                    <input type="text" name="department" id="id_department" 
+                                           class="form-control" placeholder="e.g., Computer Science" required
+                                           value="{{ request.POST.department|default:'' }}">
+                                    <div class="invalid-feedback">
+                                        Please enter your department.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="id_first_name" class="form-label">First Name *</label>
+                                    <input type="text" name="first_name" id="id_first_name" 
+                                           class="form-control" placeholder="First name" required
+                                           value="{{ request.POST.first_name|default:'' }}">
+                                    <div class="invalid-feedback">
+                                        Please enter your first name.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="id_last_name" class="form-label">Last Name *</label>
+                                    <input type="text" name="last_name" id="id_last_name" 
+                                           class="form-control" placeholder="Last name" required
+                                           value="{{ request.POST.last_name|default:'' }}">
+                                    <div class="invalid-feedback">
+                                        Please enter your last name.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="id_email" class="form-label">Email Address *</label>
+                                    <input type="email" name="email" id="id_email" 
+                                           class="form-control" placeholder="your.email@example.com" required
+                                           value="{{ request.POST.email|default:'' }}">
+                                    <div class="invalid-feedback">
+                                        Please enter a valid email address.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="id_phone" class="form-label">Phone Number (Optional)</label>
+                                    <input type="text" name="phone" id="id_phone" 
+                                           class="form-control" placeholder="+1 (555) 123-4567"
+                                           value="{{ request.POST.phone|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="id_password1" class="form-label">Password *</label>
+                                    <input type="password" name="password1" id="id_password1" 
+                                           class="form-control" placeholder="Create a strong password" required>
+                                    <div class="invalid-feedback">
+                                        Please create a password.
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        <ul class="small mt-2" style="padding-left: 20px;">
+                                            <li>At least 8 characters</li>
+                                            <li>Not too common</li>
+                                            <li>Not entirely numeric</li>
+                                        </ul>
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="id_password2" class="form-label">Confirm Password *</label>
+                                    <input type="password" name="password2" id="id_password2" 
+                                           class="form-control" placeholder="Confirm your password" required>
+                                    <div class="invalid-feedback">
+                                        Please confirm your password.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
+                            </label>
+                            <div class="invalid-feedback">
+                                You must agree before submitting.
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-success btn-lg w-100">
+                                <i class="bi bi-person-check"></i> Register as Administrator
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+                        <p>Are you a student? <a href="{% url 'register_student' %}">Register as Student</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms and Conditions Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Administrator Responsibilities</h6>
+                <p>As an administrator, you agree to:</p>
+                <ul>
+                    <li>Maintain the confidentiality of student attendance data</li>
+                    <li>Use the system only for legitimate educational purposes</li>
+                    <li>Ensure accurate attendance recording</li>
+                    <li>Protect student privacy and data security</li>
+                </ul>
+                
+                <h6>System Usage</h6>
+                <p>You are responsible for all activities under your account.</p>
+                
+                <h6>Data Privacy</h6>
+                <p>All data will be handled in accordance with applicable privacy laws and regulations.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control {
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ced4da;
+    }
+    .form-control:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+    }
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: #495057;
+    }
+    .card {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: none;
+    }
+    .card-header {
+        border-bottom: none;
+        padding: 1.5rem 1.5rem 0;
+    }
+    .card-body {
+        padding: 1.5rem;
+    }
+</style>
+
+<script>
+    // Form validation
+    (function () {
+        'use strict'
+        
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll('.needs-validation')
+        
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+    
+    // Password confirmation validation
+    document.addEventListener('DOMContentLoaded', function() {
+        const password1 = document.getElementById('id_password1');
+        const password2 = document.getElementById('id_password2');
+        
+        function validatePassword() {
+            if (password1.value !== password2.value) {
+                password2.setCustomValidity("Passwords don't match");
+                password2.classList.add('is-invalid');
+            } else {
+                password2.setCustomValidity('');
+                password2.classList.remove('is-invalid');
+            }
+        }
+        
+        password1.addEventListener('change', validatePassword);
+        password2.addEventListener('keyup', validatePassword);
+    });
+</script>
+{% endblock %}
